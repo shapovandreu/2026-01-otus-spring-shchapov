@@ -9,7 +9,10 @@ import ru.otus.hw.exceptions.QuestionReadException;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,34 +39,45 @@ public class CsvQuestionDaoTest {
         assertNotNull(questions);
         assertEquals(3, questions.size());
 
-        // Проверка первого вопроса
-        Question firstQuestion = questions.get(0);
-        assertEquals("Is there life on Mars?", firstQuestion.text());
-        assertEquals(3, firstQuestion.answers().size());
+        assertQuestion(
+                questions.get(0),
+                "Is there life on Mars?",
+                3
+        );
+        assertCorrectAnswer(
+                questions.get(0).answers().get(0),
+                "Science doesn't know this yet"
+        );
 
-        Answer firstAnswer = firstQuestion.answers().get(0);
-        assertEquals("Science doesn't know this yet", firstAnswer.text());
-        assertTrue(firstAnswer.isCorrect());
+        assertQuestion(
+                questions.get(1),
+                "How should resources be loaded form jar in Java?",
+                3
+        );
+        assertCorrectAnswer(
+                questions.get(1).answers().get(0),
+                "ClassLoader#geResourceAsStream or ClassPathResource#getInputStream"
+        );
 
-        // Проверка второго вопроса
-        Question secondQuestion = questions.get(1);
-        assertEquals("How should resources be loaded form jar in Java?", secondQuestion.text());
-        assertEquals(3, secondQuestion.answers().size());
+        assertQuestion(
+                questions.get(2),
+                "Which option is a good way to handle the exception?",
+                4
+        );
+        assertCorrectAnswer(
+                questions.get(2).answers().get(2),
+                "Rethrow with wrapping in business exception (for example QuestionReadException)"
+        );
+    }
 
-        Answer secondQuestionFirstAnswer = secondQuestion.answers().get(0);
-        assertEquals("ClassLoader#geResourceAsStream or ClassPathResource#getInputStream",
-                secondQuestionFirstAnswer.text());
-        assertTrue(secondQuestionFirstAnswer.isCorrect());
+    private void assertQuestion(Question question, String asserText, int assertSizeAnswer) {
+        assertEquals(asserText, question.text());
+        assertEquals(assertSizeAnswer, question.answers().size());
+    }
 
-        // Проверка третьего вопроса
-        Question thirdQuestion = questions.get(2);
-        assertEquals("Which option is a good way to handle the exception?", thirdQuestion.text());
-        assertEquals(4, thirdQuestion.answers().size());
-
-        Answer thirdQuestionThirdAnswer = thirdQuestion.answers().get(2);
-        assertEquals("Rethrow with wrapping in business exception (for example QuestionReadException)",
-                thirdQuestionThirdAnswer.text());
-        assertTrue(thirdQuestionThirdAnswer.isCorrect());
+    private void assertCorrectAnswer(Answer answer, String assertText) {
+        assertEquals(assertText, answer.text());
+        assertTrue(answer.isCorrect());
     }
 
     @DisplayName("выбрасывать исключение при отсутствии файла")
