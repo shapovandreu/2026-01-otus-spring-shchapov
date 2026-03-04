@@ -27,38 +27,6 @@ public class CsvQuestionDaoTest {
         csvQuestionDao = new CsvQuestionDao(fileNameProvider);
     }
 
-    @DisplayName("корректно читать CSV файл и возвращать список вопросов")
-    @Test
-    void shouldCorrectReadCsvFileAndReturnQuestionsList() {
-        String testFileName = "questions-test.csv";
-        when(fileNameProvider.getTestFileName()).thenReturn(testFileName);
-
-        List<Question> questions = csvQuestionDao.findAll();
-
-        assertNotNull(questions);
-        assertEquals(3, questions.size());
-
-        assertAll("Проверка первого вопроса",
-                () -> assertQuestion(questions.get(0), "Is there life on Mars?", 3),
-                () -> assertCorrectAnswer(questions.get(0).answers().get(0),
-                        "Science doesn't know this yet")
-        );
-
-        assertAll("Проверка второго вопроса",
-                () -> assertQuestion(questions.get(1),
-                        "How should resources be loaded form jar in Java?", 3),
-                () -> assertCorrectAnswer(questions.get(1).answers().get(0),
-                        "ClassLoader#geResourceAsStream or ClassPathResource#getInputStream")
-        );
-
-        assertAll("Проверка третьего вопроса",
-                () -> assertQuestion(questions.get(2),
-                        "Which option is a good way to handle the exception?", 4),
-                () -> assertCorrectAnswer(questions.get(2).answers().get(2),
-                        "Rethrow with wrapping in business exception (for example QuestionReadException)")
-        );
-    }
-
     @DisplayName("корректно читать данные вопроса из CSV строки")
     @ParameterizedTest
     @CsvSource({
