@@ -23,9 +23,13 @@ public class CsvQuestionDao implements QuestionDao {
 
     @Override
     public List<Question> findAll() {
-        Reader reader = createReaderForFileName(fileNameProvider.getTestFileName());
+        String fileName = fileNameProvider.getTestFileName();
 
-        return readQuestionCsvFile(reader);
+        try (Reader reader = createReaderForFileName(fileName)) {
+            return readQuestionCsvFile(reader);
+        } catch (IOException e) {
+            throw new QuestionReadException(ERROR_MESSAGE, e);
+        }
     }
 
     private Reader createReaderForFileName(String fileName) {
@@ -39,22 +43,18 @@ public class CsvQuestionDao implements QuestionDao {
     }
 
     private List<Question> readQuestionCsvFile(Reader reader) {
-        List<Question> questionList = new CsvToBeanBuilder<QuestionDto>(reader)
-                .withType(QuestionDto.class)
-                .withSkipLines(1)
-                .withSeparator(';')
-                .build()
-                .stream()
-                .map(QuestionDto::toDomainObject)
-                .toList();
-
         try {
-            reader.close();
-        } catch (IOException e) {
-            throw new QuestionReadException(ERROR_MESSAGE);
+            return new CsvToBeanBuilder<QuestionDto>(reader)
+                    .withType(QuestionDto.class)
+                    .withSkipLines(1)
+                    .withSeparator(';')
+                    .build()
+                    .stream()
+                    .map(QuestionDto::toDomainObject)
+                    .toList();
+        } catch (Exception e) {
+            throw new QuestionReadException(ERROR_MESSAGE, e);
         }
-
-        return questionList;
     }
 
 }
