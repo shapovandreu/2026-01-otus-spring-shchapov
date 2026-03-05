@@ -3,4 +3,5 @@
 Разработчик на Spring Framework  
 2026-01-otus-spring  
 
-hw01 - Введение в Spring Framework
+hw01-xml-config - Введение в Spring Framework
+hw02-annotation-config - Конфигурирование Spring-приложений
