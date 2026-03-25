@@ -34,15 +34,12 @@ public class TestServiceImpl implements TestService {
 
     private boolean askQuestion(Question question) {
         printQuestion(question);
-        var numberAnswer = readNumberAnswer(question.answers().size());
-        return question.answers().get(numberAnswer - 1).isCorrect();
-    }
-
-    private int readNumberAnswer(int sizeAnswers) {
-        return ioService.readIntForRangeWithPrompt(
+        int sizeAnswers = question.answers().size();
+        var numberAnswer = ioService.readIntForRangeWithPrompt(
                 1, sizeAnswers,
                 MessageFormat.format("Please enter the response number(1-{0}).", sizeAnswers),
                 MessageFormat.format("Enter a value between 1 and {0}", sizeAnswers));
+        return question.answers().get(numberAnswer - 1).isCorrect();
     }
 
     private void printQuestion(Question question) {
