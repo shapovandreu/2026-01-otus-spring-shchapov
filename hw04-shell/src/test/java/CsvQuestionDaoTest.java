@@ -2,7 +2,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.otus.hw.Application;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.otus.hw.config.TestFileNameProvider;
 import ru.otus.hw.dao.CsvQuestionDao;
 import ru.otus.hw.domain.Question;
@@ -10,20 +10,21 @@ import ru.otus.hw.exceptions.QuestionReadException;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = CsvQuestionDao.class)
 @DisplayName("Класс CsvQuestionDao должен")
 public class CsvQuestionDaoTest {
 
+    @MockitoBean
     private TestFileNameProvider fileNameProvider;
     private CsvQuestionDao csvQuestionDao;
 
     @BeforeEach
     void setUp() {
-        fileNameProvider = mock(TestFileNameProvider.class);
         csvQuestionDao = new CsvQuestionDao(fileNameProvider);
     }
 
