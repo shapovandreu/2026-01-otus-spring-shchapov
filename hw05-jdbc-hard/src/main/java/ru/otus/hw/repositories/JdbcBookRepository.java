@@ -8,7 +8,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -68,7 +68,6 @@ public class JdbcBookRepository implements BookRepository {
     }
 
     @Override
-    @Transactional
     public Book save(Book book) {
         if (book.getId() == 0) {
             return insert(book);
@@ -123,7 +122,7 @@ public class JdbcBookRepository implements BookRepository {
                 List<Genre> bookGenres = genreIds.stream()
                         .map(genreMap::get)
                         .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+                        .toList();
                 book.setGenres(bookGenres);
             } else {
                 book.setGenres(new ArrayList<>());
@@ -182,7 +181,7 @@ public class JdbcBookRepository implements BookRepository {
     }
 
     private void batchInsertGenresRelationsFor(Book book) {
-        if (book.getGenres() != null && !book.getGenres().isEmpty()) {
+        if (!CollectionUtils.isEmpty(book.getGenres())) {
             String insertGenresSql = """
                 INSERT INTO books_genres (book_id, genre_id)
                 VALUES (:book_id, :genre_id)
@@ -193,7 +192,7 @@ public class JdbcBookRepository implements BookRepository {
                             "book_id", book.getId(),
                             "genre_id", genre.getId()
                     ))
-                    .collect(Collectors.toList());
+                    .toList();
 
             namedParameterJdbcOperations.batchUpdate(insertGenresSql,
                     batchParams.toArray(new Map[0]));
@@ -201,20 +200,15 @@ public class JdbcBookRepository implements BookRepository {
     }
 
     private void removeGenresRelationsFor(Book book) {
-        if (book.getGenres() != null && !book.getGenres().isEmpty()) {
+        if (!CollectionUtils.isEmpty(book.getGenres())) {
             String removeGenresSql = """
                 DELETE FROM books_genres
                 WHERE book_id = :book_id
                 """;
 
-            List<Map<String, Long>> batchParams = book.getGenres().stream()
-                    .map(genre -> Map.of(
-                            "book_id", book.getId()
-                    ))
-                    .collect(Collectors.toList());
+            var mapSqlParameterSource = new MapSqlParameterSource("book_id", book.getId());
 
-            namedParameterJdbcOperations.batchUpdate(removeGenresSql,
-                    batchParams.toArray(new Map[0]));
+            namedParameterJdbcOperations.update(removeGenresSql, mapSqlParameterSource);
         }
     }
 
@@ -255,11 +249,12 @@ public class JdbcBookRepository implements BookRepository {
                             new ArrayList<>()
                     );
                 }
-                Genre genre = new Genre(
-                        rs.getLong("genre_id"),
-                        rs.getString("genre_name")
-                );
-                book.getGenres().add(genre);
+                Long gengreId = rs.getObject("genre_id", Long.class);
+                String genreName = rs.getString("genre_name");
+                if (Objects.nonNull(gengreId) && Objects.nonNull(genreName)) {
+                    Genre genre = new Genre(gengreId, genreName);
+                    book.getGenres().add(genre);
+                }
             }
             return book;
         }
