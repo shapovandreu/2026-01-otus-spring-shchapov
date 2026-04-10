@@ -200,16 +200,14 @@ public class JdbcBookRepository implements BookRepository {
     }
 
     private void removeGenresRelationsFor(Book book) {
-        if (!CollectionUtils.isEmpty(book.getGenres())) {
-            String removeGenresSql = """
+        String removeGenresSql = """
                 DELETE FROM books_genres
                 WHERE book_id = :book_id
                 """;
 
-            var mapSqlParameterSource = new MapSqlParameterSource("book_id", book.getId());
+        var mapSqlParameterSource = new MapSqlParameterSource("book_id", book.getId());
 
-            namedParameterJdbcOperations.update(removeGenresSql, mapSqlParameterSource);
-        }
+        namedParameterJdbcOperations.update(removeGenresSql, mapSqlParameterSource);
     }
 
     private static class BookRowMapper implements RowMapper<Book> {
