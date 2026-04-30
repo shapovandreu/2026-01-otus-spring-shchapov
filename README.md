@@ -9,3 +9,4 @@ hw03-spring-boot - "Чёрная магия" Spring Boot
 hw04-shell - Conditionals, Events, тестирование
 hw05-jdbc-hard - DAO на Spring JDBC
 hw06-jpa - JPQL, Spring ORM, DAO на основе Spring ORM + JPA
+hw07-spring-data - "Белая магия" Spring Data: Spring Data JPA
