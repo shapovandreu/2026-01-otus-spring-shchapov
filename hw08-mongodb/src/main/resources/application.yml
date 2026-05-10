@@ -1,0 +1,23 @@
+spring:
+  data:
+    mongodb:
+      port: 0
+      database: main
+  shell:
+    command:
+      version:
+        enabled: false
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 7.0.5
+
+mongock:
+  runner-type: initializingbean
+  migration-scan-package:
+    - ru.otus.hw.changelog
+  mongo-db:
+    write-concern:
+      journal: false
+    read-concern: local
