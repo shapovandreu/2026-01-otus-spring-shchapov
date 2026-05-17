@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Books</title>
+    <style th:replace="~{fragments/layout :: styles}"></style>
+</head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+
+<h1>Books</h1>
+
+<p><a class="btn btn-primary" th:href="@{/books/new}">Add new book</a></p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Genres</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="book : ${books}">
+        <td th:text="${book.id}"></td>
+        <td><a th:href="@{'/books/' + ${book.id}}" th:text="${book.title}"></a></td>
+        <td th:text="${book.author.fullName}"></td>
+        <td>
+            <span th:each="g, it : ${book.genres}">
+                <span th:text="${g.name}"></span><span th:if="${!it.last}">, </span>
+            </span>
+        </td>
+        <td class="actions">
+            <a th:href="@{'/books/' + ${book.id} + '/edit'}">Edit</a>
+            <form th:action="@{'/books/' + ${book.id} + '/delete'}" method="post"
+                  onsubmit="return confirm('Delete this book?');">
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(books)}">
+        <td colspan="5">No books yet.</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
