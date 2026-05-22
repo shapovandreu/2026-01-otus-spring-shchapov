@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Genres</title>
+    <style th:replace="~{fragments/layout :: styles}"></style>
+</head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+
+<h1>Genres</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="g : ${genres}">
+        <td th:text="${g.id}"></td>
+        <td th:text="${g.name}"></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(genres)}">
+        <td colspan="2">No genres yet.</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

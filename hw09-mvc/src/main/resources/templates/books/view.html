@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${book.title}">Book</title>
+    <style th:replace="~{fragments/layout :: styles}"></style>
+</head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+
+<h1 th:text="${book.title}">Book Title</h1>
+
+<p><strong>Id:</strong> <span th:text="${book.id}"></span></p>
+<p><strong>Author:</strong> <span th:text="${book.author.fullName}"></span></p>
+<p><strong>Genres:</strong>
+    <span th:each="g, it : ${book.genres}">
+        <span th:text="${g.name}"></span><span th:if="${!it.last}">, </span>
+    </span>
+</p>
+
+<p>
+    <a class="btn btn-primary" th:href="@{'/books/' + ${book.id} + '/edit'}">Edit</a>
+    <form th:action="@{'/books/' + ${book.id} + '/delete'}" method="post" style="display:inline"
+          onsubmit="return confirm('Delete this book?');">
+        <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+</p>
+
+<h2>Comments</h2>
+<ul>
+    <li th:each="c : ${comments}" th:text="${c.text}"></li>
+    <li th:if="${#lists.isEmpty(comments)}">No comments yet.</li>
+</ul>
+
+<p><a th:href="@{/books}">Back to books</a></p>
+</body>
+</html>
