@@ -10,6 +10,7 @@ import ru.otus.hw.models.Book;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -32,7 +33,7 @@ public class BookFormDto {
     public static BookFormDto fromDomain(Book book) {
         var genreIds = book.getGenres().stream()
                 .map(g -> g.getId())
-                .collect(java.util.stream.Collectors.toCollection(HashSet::new));
+                .collect(Collectors.toSet());
         return new BookFormDto(book.getId(), book.getTitle(), book.getAuthor().getId(), genreIds);
     }
 }
