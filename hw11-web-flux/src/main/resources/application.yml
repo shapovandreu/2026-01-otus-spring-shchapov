@@ -1,0 +1,10 @@
+spring:
+  data:
+    mongodb:
+      database: library
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 7.0.12
