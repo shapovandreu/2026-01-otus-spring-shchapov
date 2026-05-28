@@ -13,3 +13,4 @@ hw07-spring-data - "Белая магия" Spring Data: Spring Data JPA
 hw08-mongodb - Spring Data для подключения к нереляционным БД  
 hw09-mvc - Введение в Spring MVC, Spring MVC View на Spring Boot  
 hw10-rest - Современные приложения на Spring MVC  
+hw11-web-flux - Spring WebFlux  
