@@ -19,6 +19,11 @@ values ('Comment_1_Book_1', 1),
        ('Comment_1_Book_2', 2),
        ('Comment_1_Book_3', 3);
 
-insert into users(username, password, role)
-values ('user',  '{noop}password', 'ROLE_USER'),
-       ('admin', '{noop}admin',    'ROLE_ADMIN');
+insert into users(username, password)
+values ('user',  '{noop}password'),
+       ('admin', '{noop}admin');
+
+insert into user_roles(user_id, role)
+values (1, 'USER'),
+       (2, 'USER'),
+       (2, 'ADMIN');

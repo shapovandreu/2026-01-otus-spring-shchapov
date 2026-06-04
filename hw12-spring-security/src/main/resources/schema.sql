@@ -34,6 +34,11 @@ create table users (
     id bigserial,
     username varchar(255) not null unique,
     password varchar(255) not null,
-    role varchar(64) not null,
     primary key (id)
+);
+
+create table user_roles (
+    user_id bigint not null references users(id) on delete cascade,
+    role varchar(64) not null,
+    primary key (user_id, role)
 );
