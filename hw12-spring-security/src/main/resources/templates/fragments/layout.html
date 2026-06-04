@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:fragment="title">Library</title>
+    <style th:fragment="styles">
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        nav { background: #f0f0f0; padding: 10px; margin-bottom: 20px; }
+        nav a { margin-right: 15px; text-decoration: none; color: #333; }
+        nav a:hover { text-decoration: underline; }
+        nav .user { float: right; }
+        nav .user form { display: inline; }
+        nav .user button { background: none; border: none; cursor: pointer; color: #333; padding: 0; }
+        nav .user button:hover { text-decoration: underline; }
+        table { border-collapse: collapse; width: 100%; max-width: 900px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #eee; }
+        .actions form { display: inline; }
+        .actions a, .actions button { margin-right: 5px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input[type=text], input[type=password], select { padding: 5px; min-width: 250px; }
+        .errors { color: red; margin-top: 5px; }
+        .btn { padding: 5px 10px; cursor: pointer; }
+        .btn-danger { background: #d9534f; color: white; border: none; }
+        .btn-primary { background: #337ab7; color: white; border: none; }
+    </style>
+</head>
+<body>
+<nav th:fragment="nav">
+    <a th:href="@{/books}">Home (Books)</a>
+    <a th:href="@{/authors}">Authors</a>
+    <a th:href="@{/genres}">Genres</a>
+    <span class="user" sec:authorize="isAuthenticated()">
+        <span sec:authentication="name">user</span> &middot;
+        <form th:action="@{/logout}" method="post">
+            <button type="submit">Logout</button>
+        </form>
+    </span>
+</nav>
+</body>
+</html>
