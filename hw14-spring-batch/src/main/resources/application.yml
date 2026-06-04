@@ -1,0 +1,38 @@
+spring:
+  # ----- source: relational store (H2) -----
+  datasource:
+    url: jdbc:h2:mem:maindb;DB_CLOSE_DELAY=-1
+  sql:
+    init:
+      mode: always
+      schema-locations: schema.sql
+      data-locations: data.sql
+  jpa:
+    hibernate:
+      ddl-auto: none
+    defer-datasource-initialization: true
+    open-in-view: false
+
+  # ----- target: NoSQL store (embedded MongoDB) -----
+  data:
+    mongodb:
+      port: 0
+      database: main
+
+  # ----- Spring Batch: create metadata tables, do not auto-run on startup -----
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+
+  shell:
+    command:
+      version:
+        enabled: false
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 7.0.5
