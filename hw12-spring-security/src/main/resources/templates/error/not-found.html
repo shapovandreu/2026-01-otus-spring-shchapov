@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Not found</title>
+    <style th:replace="~{fragments/layout :: styles}"></style>
+</head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+
+<h1>404 - Not found</h1>
+<p th:text="${message}">Resource not found.</p>
+<p><a th:href="@{/books}">Back to books</a></p>
+</body>
+</html>
