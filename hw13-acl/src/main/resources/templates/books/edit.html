@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Edit book</title>
+    <style th:replace="~{fragments/layout :: styles}"></style>
+</head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+
+<h1 id="page-title">Book</h1>
+
+<form id="book-form">
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title"/>
+    <div class="errors" id="title-errors"></div>
+
+    <label for="authorId">Author</label>
+    <select id="authorId" name="authorId">
+        <option value="">-- select author --</option>
+    </select>
+    <div class="errors" id="authorId-errors"></div>
+
+    <label for="genreIds">Genres</label>
+    <select id="genreIds" name="genreIds" multiple size="6">
+    </select>
+    <div class="errors" id="genreIds-errors"></div>
+
+    <p>
+        <button class="btn btn-primary" type="submit">Save</button>
+        <a href="/books">Cancel</a>
+    </p>
+</form>
+
+<script>
+    const parts = location.pathname.split('/');
+    const isNew = parts[2] === 'new';
+    const bookId = isNew ? null : parseInt(parts[2]);
+
+    document.getElementById('page-title').textContent = isNew ? 'New book' : 'Edit book';
+    document.title = isNew ? 'New book' : 'Edit book';
+
+    Promise.all([
+        fetch('/api/authors').then(r => r.json()),
+        fetch('/api/genres').then(r => r.json()),
+        isNew ? Promise.resolve(null) : fetch('/api/books/' + bookId).then(r => r.json())
+    ]).then(([authors, genres, book]) => {
+        const authorSelect = document.getElementById('authorId');
+        authorSelect.innerHTML = '<option value="">-- select author --</option>' +
+            authors.map(a => `<option value="${a.id}"${book && book.author.id === a.id ? ' selected' : ''}>${a.fullName}</option>`).join('');
+
+        const selectedIds = book ? book.genres.map(g => g.id) : [];
+        const genreSelect = document.getElementById('genreIds');
+        genreSelect.innerHTML = genres.map(g =>
+            `<option value="${g.id}"${selectedIds.includes(g.id) ? ' selected' : ''}>${g.name}</option>`
+        ).join('');
+
+        if (book) {
+            document.getElementById('title').value = book.title;
+        }
+    });
+
+    document.getElementById('book-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        document.querySelectorAll('.errors').forEach(el => { el.textContent = ''; });
+
+        const genreSelect = document.getElementById('genreIds');
+        const body = {
+            title: document.getElementById('title').value,
+            authorId: parseInt(document.getElementById('authorId').value) || null,
+            genreIds: Array.from(genreSelect.selectedOptions).map(o => parseInt(o.value))
+        };
+
+        const url = isNew ? '/api/books' : '/api/books/' + bookId;
+        const method = isNew ? 'POST' : 'PUT';
+
+        fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        }).then(r => {
+            if (r.ok) {
+                return r.json().then(b => { location.href = '/books/' + b.id; });
+            }
+            if (r.status === 400) {
+                return r.json().then(errors => {
+                    Object.entries(errors).forEach(([field, msg]) => {
+                        const el = document.getElementById(field + '-errors');
+                        if (el) {
+                            el.textContent = msg;
+                        }
+                    });
+                });
+            }
+            if (r.status === 403) {
+                alert('You are not allowed to perform this action.');
+            }
+        });
+    });
+</script>
+</body>
+</html>

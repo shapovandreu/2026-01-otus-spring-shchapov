@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Authors</title>
+    <style th:replace="~{fragments/layout :: styles}"></style>
+</head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+
+<h1>Authors</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Full name</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="a : ${authors}">
+        <td th:text="${a.id}"></td>
+        <td th:text="${a.fullName}"></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(authors)}">
+        <td colspan="2">No authors yet.</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Book</title>
+    <style th:replace="~{fragments/layout :: styles}"></style>
+</head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+
+<div id="book-detail"><p>Loading...</p></div>
+
+<script>
+    function esc(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    const bookId = location.pathname.split('/')[2];
+
+    function deleteBook(id) {
+        if (!confirm('Delete this book?')) {
+            return;
+        }
+        fetch('/api/books/' + id, {method: 'DELETE'})
+            .then(() => { location.href = '/books'; });
+    }
+
+    fetch('/api/books/' + bookId)
+        .then(r => {
+            if (!r.ok) {
+                throw new Error('Not found');
+            }
+            return r.json();
+        })
+        .then(b => {
+            document.title = b.title;
+            document.getElementById('book-detail').innerHTML = `
+                <h1>${esc(b.title)}</h1>
+                <p><strong>Id:</strong> ${esc(b.id)}</p>
+                <p><strong>Author:</strong> ${esc(b.author.fullName)}</p>
+                <p><strong>Genres:</strong> ${b.genres.map(g => esc(g.name)).join(', ')}</p>
+                <p>
+                    <a class="btn btn-primary" href="/books/${esc(b.id)}/edit">Edit</a>
+                    <button class="btn btn-danger" onclick="deleteBook(${esc(b.id)})">Delete</button>
+                </p>
+                <h2>Comments</h2>
+                <ul id="comments-list"><li>Loading comments...</li></ul>
+                <p><a href="/books">Back to books</a></p>
+            `;
+            return fetch('/api/books/' + bookId + '/comments');
+        })
+        .then(r => r.json())
+        .then(comments => {
+            const ul = document.getElementById('comments-list');
+            ul.innerHTML = comments.length
+                ? comments.map(c => `<li>${esc(c.text)}</li>`).join('')
+                : '<li>No comments yet.</li>';
+        })
+        .catch(() => {
+            document.getElementById('book-detail').innerHTML =
+                '<p>Book not found or access denied.</p><p><a href="/books">Back to books</a></p>';
+        });
+</script>
+</body>
+</html>
