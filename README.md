@@ -15,3 +15,5 @@ hw09-mvc - Введение в Spring MVC, Spring MVC View на Spring Boot
 hw10-rest - Современные приложения на Spring MVC  
 hw11-web-flux - Spring WebFlux  
 hw12-spring-security - Spring Security: Механизмы аутентификации  
+hw13-acl - Spring Security: ACL  
+hw14-spring-batch - Spring Batch
