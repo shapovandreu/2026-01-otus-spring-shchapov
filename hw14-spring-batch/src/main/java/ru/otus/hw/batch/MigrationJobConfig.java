@@ -47,11 +47,12 @@ public class MigrationJobConfig {
     private final PlatformTransactionManager transactionManager;
 
     @Bean
-    public Step cleanMigrationStep(MongoOperations mongoOperations) {
+    public Step cleanMigrationStep(MongoOperations mongoOperations, IdMappingRegistry idMappingRegistry) {
         return new StepBuilder("cleanMigrationStep", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
                     List.of("authors", "genres", "books", "comments")
                             .forEach(mongoOperations::dropCollection);
+                    idMappingRegistry.clear();
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
                 .build();

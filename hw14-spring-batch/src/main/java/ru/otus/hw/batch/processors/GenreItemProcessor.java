@@ -1,19 +1,21 @@
 package ru.otus.hw.batch.processors;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
+import ru.otus.hw.batch.IdMappingRegistry;
 import ru.otus.hw.mongo.models.GenreDocument;
 import ru.otus.hw.relational.models.Genre;
 
-/**
- * Converts a relational {@link Genre} into its MongoDB counterpart,
- * preserving the original id as a string.
- */
 @Component
+@RequiredArgsConstructor
 public class GenreItemProcessor implements ItemProcessor<Genre, GenreDocument> {
+
+    private final IdMappingRegistry idMappingRegistry;
 
     @Override
     public GenreDocument process(Genre genre) {
-        return new GenreDocument(String.valueOf(genre.getId()), genre.getName());
+        String targetId = idMappingRegistry.mapGenre(genre.getId());
+        return new GenreDocument(targetId, genre.getName());
     }
 }

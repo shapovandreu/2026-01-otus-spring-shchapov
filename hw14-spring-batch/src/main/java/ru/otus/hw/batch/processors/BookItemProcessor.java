@@ -1,7 +1,9 @@
 package ru.otus.hw.batch.processors;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
+import ru.otus.hw.batch.IdMappingRegistry;
 import ru.otus.hw.mongo.models.AuthorDocument;
 import ru.otus.hw.mongo.models.BookDocument;
 import ru.otus.hw.mongo.models.GenreDocument;
@@ -9,23 +11,27 @@ import ru.otus.hw.relational.models.Book;
 
 import java.util.List;
 
-/**
- * Converts a relational {@link Book} into its MongoDB counterpart.
- * The author and the genres are referenced by their (preserved) ids, so the
- * relations established in the relational store survive the migration.
- */
 @Component
+@RequiredArgsConstructor
 public class BookItemProcessor implements ItemProcessor<Book, BookDocument> {
+
+    private final IdMappingRegistry idMappingRegistry;
 
     @Override
     public BookDocument process(Book book) {
-        var author = new AuthorDocument(String.valueOf(book.getAuthor().getId()),
-                book.getAuthor().getFullName());
+        String targetId = idMappingRegistry.mapBook(book.getId());
+
+        var author = new AuthorDocument();
+        author.setId(idMappingRegistry.resolveAuthor(book.getAuthor().getId()));
 
         List<GenreDocument> genres = book.getGenres().stream()
-                .map(genre -> new GenreDocument(String.valueOf(genre.getId()), genre.getName()))
+                .map(genre -> {
+                    var genreDocument = new GenreDocument();
+                    genreDocument.setId(idMappingRegistry.resolveGenre(genre.getId()));
+                    return genreDocument;
+                })
                 .toList();
 
-        return new BookDocument(String.valueOf(book.getId()), book.getTitle(), author, genres);
+        return new BookDocument(targetId, book.getTitle(), author, genres);
     }
 }

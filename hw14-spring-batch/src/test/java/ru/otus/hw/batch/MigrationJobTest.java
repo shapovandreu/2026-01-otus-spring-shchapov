@@ -1,5 +1,6 @@
 package ru.otus.hw.batch;
 
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
@@ -8,6 +9,7 @@ import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import ru.otus.hw.mongo.models.AuthorDocument;
 import ru.otus.hw.mongo.models.BookDocument;
@@ -37,17 +39,24 @@ class MigrationJobTest {
         assertThat(mongoOperations.count(new Query(), BookDocument.class)).isEqualTo(3);
         assertThat(mongoOperations.count(new Query(), CommentDocument.class)).isEqualTo(4);
 
-        var book = mongoOperations.findById("1", BookDocument.class);
+        var book = mongoOperations.findOne(
+                Query.query(Criteria.where("title").is("BookTitle_1")), BookDocument.class);
         assertThat(book).isNotNull();
-        assertThat(book.getTitle()).isEqualTo("BookTitle_1");
-        assertThat(book.getAuthor().getId()).isEqualTo("1");
+        // The Mongo store owns its id space: the id must be a freshly generated
+        // ObjectId, not the reused relational id.
+        assertThat(ObjectId.isValid(book.getId())).isTrue();
+
+        // References resolve through the new Mongo ids, so the relations survive.
+        assertThat(book.getAuthor()).isNotNull();
         assertThat(book.getAuthor().getFullName()).isEqualTo("Author_1");
         assertThat(book.getGenres())
-                .extracting(GenreDocument::getId)
-                .containsExactlyInAnyOrder("1", "2");
+                .extracting(GenreDocument::getName)
+                .containsExactlyInAnyOrder("Genre_1", "Genre_2");
 
-        var comment = mongoOperations.findById("1", CommentDocument.class);
+        var comment = mongoOperations.findOne(
+                Query.query(Criteria.where("text").is("Comment_1_Book_1")), CommentDocument.class);
         assertThat(comment).isNotNull();
-        assertThat(comment.getBook().getId()).isEqualTo("1");
+        assertThat(comment.getBook()).isNotNull();
+        assertThat(comment.getBook().getId()).isEqualTo(book.getId());
     }
 }
