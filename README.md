@@ -16,4 +16,8 @@ hw10-rest - Современные приложения на Spring MVC
 hw11-web-flux - Spring WebFlux  
 hw12-spring-security - Spring Security: Механизмы аутентификации  
 hw13-acl - Spring Security: ACL  
-hw14-spring-batch - Spring Batch
+hw14-spring-batch - Spring Batch  
+hw15-spring-integration - Spring Integration: Endpoints и Flow Components  
+hw16-spring-boot-actuator - Монолиты vs. Microservices (Round 2), Spring Boot Actuator - must have в микросервисах  
+hw17-docker - Docker, оркестрация  
+hw18-spring-cloude - Spring Cloud. Отказоустойчивость и мониторинг  
