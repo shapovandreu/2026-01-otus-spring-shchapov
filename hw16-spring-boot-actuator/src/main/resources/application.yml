@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:maindb
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+      schema-locations: classpath:schema.sql
+  jpa:
+    hibernate:
+      ddl-auto: none
+    defer-datasource-initialization: true
+  data:
+    rest:
+      base-path: /api
+
+logging:
+  file:
+    name: logs/hw16.log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, info, loggers, logfile, prometheus
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: hw16-spring-boot-actuator
+    description: Library application with Spring Boot Actuator
