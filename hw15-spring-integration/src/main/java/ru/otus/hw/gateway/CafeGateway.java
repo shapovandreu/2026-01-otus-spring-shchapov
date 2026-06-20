@@ -9,6 +9,6 @@ import ru.otus.hw.domain.Order;
 @MessagingGateway
 public interface CafeGateway {
 
-    @Gateway(requestChannel = "orders.input")
+    @Gateway(requestChannel = "ordersInput")
     Delivery placeOrder(Order order);
 }

@@ -23,13 +23,21 @@ import ru.otus.hw.service.Waiter;
 @Configuration
 public class CafeFlowConfig {
 
-    public static final String ORDER_ID_HEADER = "orderId";
-
-    private static final String INVALID_ORDERS_CHANNEL = "invalidOrders.input";
+    private static final String ORDER_ID_HEADER = "orderId";
 
     private static final int QUEUE_CAPACITY = 20;
 
     private static final long POLL_INTERVAL_MS = 100;
+
+    @Bean
+    public MessageChannel ordersInput() {
+        return new DirectChannel();
+    }
+
+    @Bean
+    public MessageChannel invalidOrders() {
+        return new DirectChannel();
+    }
 
     @Bean
     public MessageChannel hotDrinks() {
@@ -52,9 +60,9 @@ public class CafeFlowConfig {
      */
     @Bean
     public IntegrationFlow orderFlow() {
-        return IntegrationFlow.from("orders.input")
+        return IntegrationFlow.from(ordersInput())
                 .filter(Order.class, order -> !order.getItems().isEmpty(),
-                        filter -> filter.discardChannel(INVALID_ORDERS_CHANNEL))
+                        filter -> filter.discardChannel(invalidOrders()))
                 .enrichHeaders(headers -> headers.headerExpression(ORDER_ID_HEADER, "payload.id"))
                 .split(Order.class, Order::getItems)
                 .<OrderItem, String>route(item -> item.isIced() ? "iced" : "hot",
@@ -100,8 +108,10 @@ public class CafeFlowConfig {
                     List<Drink> drinks = group.getMessages().stream()
                             .map(message -> (Drink) message.getPayload())
                             .collect(Collectors.toList());
-                    Long orderId = group.getMessages().iterator().next()
-                            .getHeaders().get(ORDER_ID_HEADER, Long.class);
+                    Long orderId = group.getMessages().stream()
+                            .findFirst()
+                            .map(msg -> msg.getHeaders().get(ORDER_ID_HEADER, Long.class))
+                            .orElse(null);
                     return new Delivery(orderId, drinks);
                 }))
                 .handle(waiter, "deliver")
@@ -113,7 +123,7 @@ public class CafeFlowConfig {
      */
     @Bean
     public IntegrationFlow invalidOrdersFlow() {
-        return IntegrationFlow.from(INVALID_ORDERS_CHANNEL)
+        return IntegrationFlow.from(invalidOrders())
                 .log(LoggingHandler.Level.WARN, "ru.otus.hw.cafe",
                         message -> "Заказ без позиций отклонён: " + message.getPayload())
                 .nullChannel();
