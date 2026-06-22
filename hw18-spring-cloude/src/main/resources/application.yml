@@ -1,0 +1,72 @@
+spring:
+  application:
+    name: hw18-spring-cloude
+  datasource:
+    url: jdbc:h2:mem:maindb
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+      schema-locations: classpath:schema.sql
+  jpa:
+    hibernate:
+      ddl-auto: none
+    defer-datasource-initialization: true
+
+# Мониторинг: открываем Actuator-эндпоинты, в т.ч. состояние circuit breaker'ов и метрики Prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus, circuitbreakers, circuitbreakerevents, retries, retryevents
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# Конфигурация отказоустойчивости (внешние вызовы = обращения к БД)
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        # Бизнес-исключение не считаем сбоем БД и не учитываем при подсчёте ошибок
+        ignore-exceptions:
+          - ru.otus.hw.exceptions.EntityNotFoundException
+    instances:
+      authorService:
+        base-config: default
+      genreService:
+        base-config: default
+      bookService:
+        base-config: default
+      commentService:
+        base-config: default
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 200ms
+        ignore-exceptions:
+          - ru.otus.hw.exceptions.EntityNotFoundException
+    instances:
+      authorService:
+        base-config: default
+      genreService:
+        base-config: default
+      bookService:
+        base-config: default
+      commentService:
+        base-config: default
