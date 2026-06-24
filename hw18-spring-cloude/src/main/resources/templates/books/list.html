@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Books</title>
+    <style th:replace="~{fragments/layout :: styles}"></style>
+</head>
+<body>
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+
+<h1>Books</h1>
+<p><a class="btn btn-primary" href="/books/new">Add new book</a></p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Genres</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody id="books-tbody">
+    <tr><td colspan="5">Loading...</td></tr>
+    </tbody>
+</table>
+
+<script>
+    function esc(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function deleteBook(id) {
+        if (!confirm('Delete this book?')) {
+            return;
+        }
+        fetch('/api/books/' + id, {method: 'DELETE'})
+            .then(() => loadBooks());
+    }
+
+    function loadBooks() {
+        fetch('/api/books')
+            .then(r => r.json())
+            .then(books => {
+                const tbody = document.getElementById('books-tbody');
+                if (books.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">No books yet.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = books.map(b => `
+                    <tr>
+                        <td>${esc(b.id)}</td>
+                        <td><a href="/books/${esc(b.id)}">${esc(b.title)}</a></td>
+                        <td>${esc(b.author.fullName)}</td>
+                        <td>${b.genres.map(g => esc(g.name)).join(', ')}</td>
+                        <td class="actions">
+                            <a href="/books/${esc(b.id)}/edit">Edit</a>
+                            <button class="btn btn-danger" onclick="deleteBook(${esc(b.id)})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            });
+    }
+
+    loadBooks();
+</script>
+</body>
+</html>

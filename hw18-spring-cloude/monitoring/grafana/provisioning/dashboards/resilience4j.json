@@ -1,0 +1,55 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "schemaVersion": 39,
+  "title": "Resilience4j Circuit Breakers",
+  "tags": ["resilience4j", "hw18"],
+  "time": { "from": "now-15m", "to": "now" },
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Состояние circuit breaker (1 = активно)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "resilience4j_circuitbreaker_state",
+          "legendFormat": "{{name}} - {{state}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Доля неуспешных вызовов, %",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "resilience4j_circuitbreaker_failure_rate",
+          "legendFormat": "{{name}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Вызовы по типу (rate за 1m)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(resilience4j_circuitbreaker_calls_seconds_count[1m])",
+          "legendFormat": "{{name}} - {{kind}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Не пропущенные вызовы (circuit OPEN)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(resilience4j_circuitbreaker_not_permitted_calls_total[1m])",
+          "legendFormat": "{{name}}"
+        }
+      ]
+    }
+  ]
+}
