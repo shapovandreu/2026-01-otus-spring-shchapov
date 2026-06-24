@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/library}
+    username: ${SPRING_DATASOURCE_USERNAME:library}
+    password: ${SPRING_DATASOURCE_PASSWORD:library}
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+      schema-locations: classpath:schema.sql
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    defer-datasource-initialization: true
+  data:
+    rest:
+      base-path: /api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, info, loggers, prometheus
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: hw17-docker
+    description: Library application wrapped in Docker with PostgreSQL
