@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: hw15-spring-integration
+
+logging:
+  level:
+    ru.otus.hw: INFO
