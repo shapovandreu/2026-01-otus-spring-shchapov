@@ -1,0 +1,238 @@
+@gateway = http://localhost:8080
+@org = 11111111-1111-1111-1111-111111111111
+@installation = 22222222-2222-2222-2222-222222222222
+
+###
+POST {{gateway}}/api/v1/auth/login
+Content-Type: application/json
+
+{ "username": "admin", "password": "admin" }
+
+> {% client.global.set("operatorToken", response.body.accessToken); %}
+
+###
+POST {{gateway}}/api/v1/catalog/products
+Content-Type: application/json
+Authorization: Bearer {{operatorToken}}
+
+{ "name": "app", "description": "Демонстрационный продукт для сквозного сценария" }
+
+> {% client.global.set("productId", response.body.id); %}
+
+###
+POST {{gateway}}/api/v1/catalog/products/{{productId}}/releases
+Content-Type: application/json
+Authorization: Bearer {{operatorToken}}
+
+{
+  "version": "1.4.2",
+  "channel": "BETA",
+  "changelog": "Первый выпуск: pull-цикл, verify-gate, намерения."
+}
+
+> {% client.global.set("releaseId", response.body.id); %}
+
+###
+PATCH {{gateway}}/api/v1/catalog/releases/{{releaseId}}
+Content-Type: application/json
+Authorization: Bearer {{operatorToken}}
+
+{
+  "version": "1.4.3",
+  "channel": "BETA",
+  "changelog": "Поправлена версия до публикации."
+}
+
+###
+
+###
+POST {{gateway}}/api/v1/catalog/releases/{{releaseId}}/publish
+Authorization: Bearer {{operatorToken}}
+
+###
+PATCH {{gateway}}/api/v1/catalog/releases/{{releaseId}}/channel
+Content-Type: application/json
+Authorization: Bearer {{operatorToken}}
+
+{ "channel": "STABLE" }
+
+###
+PATCH {{gateway}}/api/v1/catalog/products/{{productId}}
+Content-Type: application/json
+Authorization: Bearer {{operatorToken}}
+
+{ "name": "app", "description": "Описание можно править в любой момент" }
+
+###
+DELETE {{gateway}}/api/v1/catalog/products/{{productId}}
+Authorization: Bearer {{operatorToken}}
+
+###
+POST {{gateway}}/api/v1/entitlements
+Content-Type: application/json
+Authorization: Bearer {{operatorToken}}
+
+{
+  "orgId": "{{org}}",
+  "productId": "{{productId}}",
+  "channel": "stable",
+  "validUntil": "2027-01-01T00:00:00Z"
+}
+
+> {% client.global.set("entitlementId", response.body.id); %}
+
+###
+POST {{gateway}}/api/v1/auth/enrollment-tokens
+Content-Type: application/json
+Authorization: Bearer {{operatorToken}}
+
+{ "orgId": "{{org}}", "ttl": "PT24H" }
+
+> {% client.global.set("enrollToken", response.body.token); %}
+
+###
+POST {{gateway}}/api/v1/auth/enroll
+Content-Type: application/json
+
+{ "token": "{{enrollToken}}" }
+
+> {% client.global.set("agentToken", response.body.accessToken); %}
+
+###
+GET {{gateway}}/api/v1/releases?product={{productId}}&channel=stable
+Authorization: Bearer {{agentToken}}
+
+###
+GET {{gateway}}/api/v1/releases/{{releaseId}}/manifest
+Authorization: Bearer {{agentToken}}
+
+###
+POST {{gateway}}/api/v1/telemetry
+Content-Type: application/json
+Authorization: Bearer {{agentToken}}
+
+{
+  "installationId": "{{installation}}",
+  "productId": "{{productId}}",
+  "type": "STATE_CHANGED",
+  "state": "running",
+  "releaseId": "{{releaseId}}",
+  "occurredAt": "2026-07-20T10:00:00Z"
+}
+
+###
+GET {{gateway}}/api/v1/telemetry/installations?org={{org}}&page=0&limit=50
+Authorization: Bearer {{operatorToken}}
+
+###
+GET {{gateway}}/api/v1/telemetry/events?installation={{installation}}&page=0&limit=50
+Authorization: Bearer {{operatorToken}}
+
+###
+GET {{gateway}}/api/v1/telemetry/audit?limit=50
+Authorization: Bearer {{operatorToken}}
+
+###
+GET {{gateway}}/api/v1/telemetry/audit?action=publish-release
+Authorization: Bearer {{operatorToken}}
+
+###
+GET {{gateway}}/api/v1/telemetry/audit?org={{org}}
+Authorization: Bearer {{operatorToken}}
+
+###
+GET {{gateway}}/api/v1/auth/orgs
+Authorization: Bearer {{operatorToken}}
+
+###
+POST {{gateway}}/api/v1/auth/orgs
+Authorization: Bearer {{operatorToken}}
+Content-Type: application/json
+
+{
+  "name": "globex"
+}
+
+> {% client.global.set("newOrgId", response.body.id); %}
+
+###
+PUT {{gateway}}/api/v1/auth/orgs/{{newOrgId}}
+Content-Type: application/json
+Authorization: Bearer {{operatorToken}}
+
+{ "name": "globex-corp" }
+
+###
+DELETE {{gateway}}/api/v1/auth/orgs/{{newOrgId}}
+Authorization: Bearer {{operatorToken}}
+
+###
+GET {{gateway}}/api/v1/auth/enrollment-tokens?orgId={{org}}
+Authorization: Bearer {{operatorToken}}
+
+###
+GET {{gateway}}/api/v1/entitlements?orgId={{org}}
+Authorization: Bearer {{operatorToken}}
+
+###
+PUT {{gateway}}/api/v1/entitlements/{{entitlementId}}
+Content-Type: application/json
+Authorization: Bearer {{operatorToken}}
+
+{ "validUntil": null }
+
+###
+DELETE {{gateway}}/api/v1/entitlements/{{entitlementId}}
+Authorization: Bearer {{operatorToken}}
+
+###
+
+###
+POST {{gateway}}/api/v1/auth/orgs/{{org}}/users
+Content-Type: application/json
+Authorization: Bearer {{operatorToken}}
+
+{ "username": "acme-admin-2", "password": "acme-admin-2" }
+
+###
+POST {{gateway}}/api/v1/auth/login
+Content-Type: application/json
+
+{ "username": "acme-admin", "password": "<пароль из лога агента>" }
+
+> {% client.global.set("clientToken", response.body.accessToken); %}
+
+###
+GET {{gateway}}/api/v1/catalog/available
+Authorization: Bearer {{clientToken}}
+
+###
+POST {{gateway}}/api/v1/intents
+Content-Type: application/json
+Authorization: Bearer {{clientToken}}
+
+{
+  "installationId": "{{installation}}",
+  "productId": "{{productId}}",
+  "action": "INSTALL",
+  "targetReleaseId": "{{releaseId}}"
+}
+
+###
+GET {{gateway}}/api/v1/intents
+Authorization: Bearer {{clientToken}}
+
+###
+POST {{gateway}}/api/v1/intents
+Content-Type: application/json
+Authorization: Bearer {{clientToken}}
+
+{
+  "installationId": "{{installation}}",
+  "productId": "{{productId}}",
+  "action": "UNINSTALL"
+}
+
+###
+GET {{gateway}}/api/v1/entitlements/mine
+Authorization: Bearer {{clientToken}}

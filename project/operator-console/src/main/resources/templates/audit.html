@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Аудит')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <h1>Журнал операторских действий</h1>
+    <p class="hint">
+        Прослеживаемость решений: кто и когда опубликовал релиз, выдал лицензию или enrollment-токен.
+        Действия агентов сюда не попадают — они в телеметрии.
+    </p>
+
+    <form class="card row" method="get" action="/audit">
+        <div class="field">
+            <label for="actor">Оператор</label>
+            <input id="actor" name="actor" th:value="${actor}" placeholder="admin">
+        </div>
+        <div class="field">
+            <label for="org">Организация</label>
+            <select id="org" name="org">
+                <option value="">все</option>
+                <option th:each="o : ${orgs}" th:value="${o.id()}" th:text="${o.name()}"
+                        th:selected="${selectedOrg != null and selectedOrg.toString() == o.id().toString()}">acme
+                </option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="action">Действие</label>
+            <select id="action" name="action">
+                <option value="">все</option>
+                <option th:each="a : ${actions}" th:value="${a}" th:text="${a}"
+                        th:selected="${action != null and action == a}">publish-release
+                </option>
+            </select>
+        </div>
+        <button type="submit">Показать</button>
+    </form>
+
+    <div class="scroll">
+        <table>
+            <thead>
+            <tr>
+                <th>Когда</th>
+                <th>Оператор</th>
+                <th>Роли</th>
+                <th>Действие</th>
+                <th>Объект</th>
+                <th>Организация</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="e : ${entries}">
+                <td th:insert="~{layout :: ts(${e.occurredAt()})}">—</td>
+                <td th:text="${e.actor()}">admin</td>
+                <td th:text="${e.roles() != null} ? ${#strings.listJoin(e.roles(), ', ')} : '—'">ADMIN</td>
+                <td><span class="badge" th:text="${e.action()}">publish-release</span></td>
+                <td>
+                    <span th:text="${e.targetType()}">release</span>
+                    <span class="uuid" th:text="${e.targetId()}">—</span>
+                </td>
+                <td th:if="${e.orgId() == null}">—</td>
+                <td th:unless="${e.orgId() == null}"
+                    th:text="${orgNames.containsKey(e.orgId())} ? ${orgNames.get(e.orgId())} : ${e.orgId()}">acme</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(entries)}">
+                <td class="empty" colspan="6">Записей по этому фильтру нет.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{layout :: pager(${baseUrl}, ${page}, ${hasNext})}"></div>
+</main>
+
+</body>
+</html>

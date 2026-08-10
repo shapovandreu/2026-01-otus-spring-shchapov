@@ -1,0 +1,14 @@
+server:
+  port: 8086
+
+spring:
+  thymeleaf:
+    cache: false
+
+iw:
+  console:
+    gateway-url: ${GATEWAY_URL:http://localhost:8080}
+    request-timeout: 40s
+    session:
+      cookie-name: iw_operator
+      secure: false

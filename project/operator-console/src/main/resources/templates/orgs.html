@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Организации')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <h1>Организации</h1>
+
+    <div class="toolbar">
+        <h2 style="margin:0">Все организации</h2>
+        <button type="button" data-dialog="newOrg">Новая организация</button>
+    </div>
+
+    <div class="scroll">
+        <table>
+            <thead>
+            <tr>
+                <th>Название</th>
+                <th>Создана</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="o : ${orgs}">
+                <td th:text="${o.name()}">acme</td>
+                <td th:insert="~{layout :: ts(${o.createdAt()})}">—</td>
+                <td class="actions">
+                    <button type="button" class="secondary small" data-dialog="editOrg"
+                            th:attr="data-action=@{'/orgs/' + ${o.id()}}, data-set-Name=${o.name()}">
+                        Переименовать
+                    </button>
+                    <form method="post" th:action="@{'/orgs/' + ${o.id()} + '/delete'}"
+                          data-confirm="Удалить организацию? Действие необратимо.">
+                        <button type="submit" class="danger small">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(orgs)}">
+                <td class="empty" colspan="3">Организаций пока нет.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <dialog id="newOrg">
+        <h2>Новая организация</h2>
+        <form method="post" action="/orgs">
+            <div class="field">
+                <label for="name">Название</label>
+                <input id="name" name="name" required autocomplete="off">
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="secondary" data-dialog-close>Отмена</button>
+                <button type="submit">Создать</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="editOrg">
+        <h2>Переименовать организацию</h2>
+        <form method="post" action="/orgs">
+            <div class="field">
+                <label for="editName">Название</label>
+                <input id="editName" name="name" required autocomplete="off">
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="secondary" data-dialog-close>Отмена</button>
+                <button type="submit">Сохранить</button>
+            </div>
+        </form>
+    </dialog>
+</main>
+
+</body>
+</html>

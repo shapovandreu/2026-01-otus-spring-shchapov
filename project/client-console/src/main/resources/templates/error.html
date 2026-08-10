@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Ошибка')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <div class="card">
+        <h1>Операция не выполнена</h1>
+        <p class="hint">
+            <span th:text="'HTTP ' + ${status}">HTTP 409</span>
+            <span th:if="${code}" th:text="' · ' + ${code}"> · CODE</span>
+        </p>
+        <p class="notice notice-error" th:text="${message}">Описание</p>
+        <p><a href="/">← к инсталляциям</a></p>
+    </div>
+</main>
+
+</body>
+</html>

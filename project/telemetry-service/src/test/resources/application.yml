@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: telemetry-service
+  cloud:
+    config:
+      enabled: false
+  kafka:
+    consumer:
+      group-id: telemetry-it
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:9/jwks
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+
+eureka:
+  client:
+    enabled: false
+
+iw:
+  telemetry:
+    topic: telemetry
+  audit:
+    topic: audit

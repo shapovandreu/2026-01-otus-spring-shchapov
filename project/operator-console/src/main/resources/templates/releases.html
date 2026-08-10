@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Релизы')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <h1>Релизы</h1>
+
+    <div class="toolbar">
+        <h2 style="margin:0">Версии продукта</h2>
+        <button type="button" data-dialog="newRelease">Новый релиз</button>
+    </div>
+
+    <div class="scroll">
+        <table>
+            <thead>
+            <tr>
+                <th>Версия</th>
+                <th>Канал</th>
+                <th>Статус</th>
+                <th>Список изменений</th>
+                <th>Создан</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${releases}">
+                <td th:text="${r.version()}">1.0.0</td>
+                <td><span class="badge" th:text="${r.channel()}">stable</span></td>
+                <td>
+                    <span th:if="${r.published()}" class="badge badge-published">опубликован</span>
+                    <span th:unless="${r.published()}" class="badge">черновик</span>
+                </td>
+                <td class="wrap" th:text="${r.changelog()} ?: '—'">—</td>
+                <td th:insert="~{layout :: ts(${r.createdAt()})}">—</td>
+                <td class="actions">
+                    <button th:unless="${r.published()}" type="button" class="secondary small"
+                            data-dialog="editRelease"
+                            th:attr="data-action=@{'/catalog/releases/' + ${r.id()}},
+                                     data-set-Version=${r.version()},
+                                     data-set-Channel=${r.channel() == 'stable'} ? 'STABLE' : 'BETA',
+                                     data-set-Changelog=${r.changelog()} ?: ''">
+                        Изменить
+                    </button>
+                    <form th:unless="${r.published()}" method="post"
+                          th:action="@{'/catalog/releases/' + ${r.id()} + '/publish'}"
+                          data-confirm="Опубликовать релиз? Отменить публикацию нельзя.">
+                        <button type="submit" class="secondary small">Опубликовать</button>
+                    </form>
+                    <form th:unless="${r.published()}" method="post"
+                          th:action="@{'/catalog/releases/' + ${r.id()} + '/delete'}"
+                          data-confirm="Удалить черновик? Действие необратимо.">
+                        <input type="hidden" name="productId" th:value="${productId}">
+                        <button type="submit" class="danger small">Удалить</button>
+                    </form>
+                    <button th:if="${r.published()}" type="button" class="secondary small"
+                            data-dialog="changeChannel"
+                            th:attr="data-action=@{'/catalog/releases/' + ${r.id()} + '/channel'},
+                                     data-set-Channel=${r.channel() == 'stable'} ? 'STABLE' : 'BETA'">
+                        Сменить канал
+                    </button>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(releases)}">
+                <td class="empty" colspan="6">У этого продукта пока нет релизов.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <dialog id="newRelease">
+        <h2>Новый релиз</h2>
+        <form method="post" th:action="@{'/catalog/products/' + ${productId} + '/releases'}">
+            <div class="field">
+                <label for="version">Версия (semver)</label>
+                <input id="version" name="version" placeholder="1.4.2" required autocomplete="off">
+            </div>
+            <div class="field">
+                <label for="channel">Канал</label>
+                <select id="channel" name="channel">
+                    <option value="STABLE">stable</option>
+                    <option value="BETA">beta</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="changelog">Список изменений</label>
+                <textarea id="changelog" name="changelog" maxlength="1000"
+                          placeholder="Что изменилось в этой версии"></textarea>
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="secondary" data-dialog-close>Отмена</button>
+                <button type="submit">Создать черновик</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="editRelease">
+        <h2>Изменить черновик</h2>
+        <form method="post" action="/catalog">
+            <div class="field">
+                <label for="editVersion">Версия (semver)</label>
+                <input id="editVersion" name="version" placeholder="1.4.2" required autocomplete="off">
+            </div>
+            <div class="field">
+                <label for="editChannel">Канал</label>
+                <select id="editChannel" name="channel">
+                    <option value="STABLE">stable</option>
+                    <option value="BETA">beta</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="editChangelog">Список изменений</label>
+                <textarea id="editChangelog" name="changelog" maxlength="1000"
+                          placeholder="Что изменилось в этой версии"></textarea>
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="secondary" data-dialog-close>Отмена</button>
+                <button type="submit">Сохранить</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="changeChannel">
+        <h2>Канал публикации</h2>
+        <form method="post" action="/catalog">
+            <div class="field">
+                <label for="newChannel">Канал</label>
+                <select id="newChannel" name="channel">
+                    <option value="STABLE">stable</option>
+                    <option value="BETA">beta</option>
+                </select>
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="secondary" data-dialog-close>Отмена</button>
+                <button type="submit">Сохранить</button>
+            </div>
+        </form>
+    </dialog>
+
+    <p><a href="/catalog">← к продуктам</a></p>
+</main>
+
+</body>
+</html>

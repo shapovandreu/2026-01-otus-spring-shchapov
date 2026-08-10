@@ -1,0 +1,89 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: false
+          routes:
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/api/v1/auth/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: authCircuitBreaker
+                    fallbackUri: forward:/fallback/auth-service
+
+            - id: catalog-service
+              uri: lb://catalog-service
+              predicates:
+                - Path=/api/v1/catalog/**,/api/v1/releases/**,/api/v1/intents/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: catalogCircuitBreaker
+                    fallbackUri: forward:/fallback/catalog-service
+
+            - id: license-service
+              uri: lb://license-service
+              predicates:
+                - Path=/api/v1/entitlements/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: licenseCircuitBreaker
+                    fallbackUri: forward:/fallback/license-service
+
+            - id: telemetry-service
+              uri: lb://telemetry-service
+              predicates:
+                - Path=/api/v1/telemetry/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: telemetryCircuitBreaker
+                    fallbackUri: forward:/fallback/telemetry-service
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${AUTH_JWKS_URI:http://localhost:8081/api/v1/auth/.well-known/jwks.json}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+    instances:
+      authCircuitBreaker:
+        base-config: default
+      catalogCircuitBreaker:
+        base-config: default
+      licenseCircuitBreaker:
+        base-config: default
+      telemetryCircuitBreaker:
+        base-config: default
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 30s
+    instances:
+      authCircuitBreaker:
+        base-config: default
+      catalogCircuitBreaker:
+        base-config: default
+      licenseCircuitBreaker:
+        base-config: default
+      telemetryCircuitBreaker:
+        base-config: default

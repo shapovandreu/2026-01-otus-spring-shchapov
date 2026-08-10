@@ -1,0 +1,36 @@
+server:
+  port: 8081
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://${POSTGRES_HOST:localhost}:5432/iw_auth
+    username: iw
+    password: iw
+    pool:
+      initial-size: 5
+      max-size: 20
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:5432/iw_auth
+    user: iw
+    password: iw
+
+iw:
+  auth:
+    jwt:
+      issuer: https://inversionwharf.com/auth
+      operator-ttl: 1h
+      agent-ttl: 24h
+    enrollment:
+      default-ttl: 24h
+    seed-operators:
+      - username: admin
+        password: admin
+        roles: ADMIN,RM,LM
+      - username: rmanager
+        password: rmanager
+        roles: RM
+      - username: lmanager
+        password: lmanager
+        roles: LM

@@ -1,4 +1,7 @@
 /.idea/
 /spring-shell.log
 target/
+build/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
 logs/

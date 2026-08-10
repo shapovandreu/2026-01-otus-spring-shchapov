@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: operator-console
+  cloud:
+    config:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false

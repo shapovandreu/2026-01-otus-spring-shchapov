@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Вход')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <form class="login card" method="post" action="/login">
+        <h1>Вход оператора</h1>
+
+        <p class="notice notice-warn" th:if="${expired}">Сессия истекла — войдите заново.</p>
+        <p class="notice notice-error" th:if="${error}" th:text="${error}">Ошибка</p>
+
+        <div class="field">
+            <label for="username">Логин</label>
+            <input id="username" name="username" autocomplete="username" autofocus required>
+        </div>
+        <div class="field">
+            <label for="password">Пароль</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit">Войти</button>
+    </form>
+</main>
+
+</body>
+</html>

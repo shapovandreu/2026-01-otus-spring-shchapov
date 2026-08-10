@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Лента событий')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <h1>Лента событий</h1>
+    <p class="hint">
+        Инсталляция <span class="uuid" th:text="${installationId}">—</span>.
+        <em>Произошло</em> — время на стороне агента, <em>принято</em> — время записи в Control Plane.
+    </p>
+
+    <div class="scroll">
+        <table>
+            <thead>
+            <tr>
+                <th>Тип</th>
+                <th>Состояние</th>
+                <th>Релиз</th>
+                <th>Агент</th>
+                <th>Сообщение</th>
+                <th>Произошло</th>
+                <th>Принято</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="e : ${events}">
+                <td><span class="badge" th:text="${e.type()}">state_changed</span></td>
+                <td>
+                    <span class="state"
+                          th:classappend="${e.state() == 'RUNNING'} ? 'state-ok'
+                                        : (${e.state() == 'FAILED' or e.state() == 'REJECTED'} ? 'state-error' : 'state-warn')"
+                          th:text="${e.state()} ?: '—'">RUNNING</span>
+                </td>
+                <td th:if="${e.releaseId() != null}"
+                    th:text="${releaseVersions.get(e.releaseId())} ?: ${e.releaseId()}">1.4.2</td>
+                <td th:unless="${e.releaseId() != null}">—</td>
+                <td th:insert="~{layout :: uuid(${e.agentId()})}">—</td>
+                <td class="wrap" th:text="${e.message()} ?: '—'">—</td>
+                <td th:insert="~{layout :: ts(${e.occurredAt()})}">—</td>
+                <td th:insert="~{layout :: ts(${e.receivedAt()})}">—</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(events)}">
+                <td class="empty" colspan="7">По этой инсталляции событий нет.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{layout :: pager(${baseUrl}, ${page}, ${hasNext})}"></div>
+    <p><a href="/">← ко всем инсталляциям</a></p>
+</main>
+
+</body>
+</html>

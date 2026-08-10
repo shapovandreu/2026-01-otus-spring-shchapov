@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Enrollment-токены')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <h1>Enrollment-токены</h1>
+    <p class="hint">
+        Одноразовый токен — это право завести нового агента в организации. Агент меняет его на свой
+        JWT при первом старте; повторно тот же токен не сработает.
+    </p>
+
+    <div class="card" th:if="${issued}">
+        <h2 style="margin-top:0">Токен выпущен — скопируйте сейчас</h2>
+        <p class="notice notice-warn">
+            Это единственный показ. Закроете страницу — токен будет не восстановить, придётся
+            выпускать новый.
+        </p>
+        <p class="secret" th:text="${issued.token()}">secret</p>
+        <p class="hint">
+            действует до <span th:replace="~{layout :: ts(${issued.expiresAt()})}">—</span>
+        </p>
+    </div>
+
+    <div class="toolbar">
+        <form class="filter" method="get" action="/licenses/tokens">
+            <div class="field">
+                <label for="org">Организация</label>
+                <select id="org" name="org">
+                    <option value="">— все —</option>
+                    <option th:each="o : ${orgs}" th:value="${o.id()}" th:text="${o.name()}"
+                            th:selected="${selectedOrg != null and selectedOrg.toString() == o.id().toString()}">acme
+                    </option>
+                </select>
+            </div>
+            <button type="submit" class="secondary">Показать</button>
+        </form>
+        <button type="button" data-dialog="newToken">Выпустить токен</button>
+    </div>
+
+    <div class="scroll">
+        <table>
+            <thead>
+            <tr>
+                <th>Токен</th>
+                <th>Организация</th>
+                <th>Состояние</th>
+                <th>Действует до</th>
+                <th>Выпущен</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="t : ${tokens}">
+                <td th:insert="~{layout :: uuid(${t.id()})}">—</td>
+                <td th:text="${orgNames.containsKey(t.orgId())} ? ${orgNames.get(t.orgId())} : ${t.orgId()}">acme</td>
+                <td>
+                    <span class="badge" th:classappend="${t.status() == 'ACTIVE'} ? 'badge-published' : ''"
+                          th:text="${t.status()}">ACTIVE</span>
+                </td>
+                <td th:insert="~{layout :: ts(${t.expiresAt()})}">—</td>
+                <td th:insert="~{layout :: ts(${t.createdAt()})}">—</td>
+                <td class="actions">
+                    <form th:if="${t.status() == 'ACTIVE' or t.status() == 'EXPIRED'}" method="post"
+                          th:action="@{'/licenses/tokens/' + ${t.id()} + '/revoke'}"
+                          data-confirm="Отозвать этот токен?">
+                        <button type="submit" class="danger small">Отозвать</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(tokens)}">
+                <td class="empty" colspan="6">Токенов пока не выпускали.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <dialog id="newToken">
+        <h2>Выпустить токен</h2>
+        <form method="post" action="/licenses/tokens">
+            <div class="field">
+                <label for="orgId">Организация</label>
+                <select id="orgId" name="orgId" required>
+                    <option th:each="o : ${orgs}" th:value="${o.id()}" th:text="${o.name()}">acme</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="ttlHours">Срок жизни, часов</label>
+                <input id="ttlHours" name="ttlHours" type="number" min="1" value="24">
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="secondary" data-dialog-close>Отмена</button>
+                <button type="submit">Выпустить</button>
+            </div>
+        </form>
+    </dialog>
+</main>
+
+</body>
+</html>

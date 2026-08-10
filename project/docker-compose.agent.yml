@@ -1,0 +1,16 @@
+name: inversionwharf-agent
+
+services:
+  agent-service:
+    build: ./agent-service
+    ports:
+      - "8085:8085"
+    environment:
+      ENROLLMENT_TOKEN: "bARk7yKzJ64LutLKq0KuCGHNSNyjMQhXCSNmRCxxG-I"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8085/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 3s
+      retries: 12

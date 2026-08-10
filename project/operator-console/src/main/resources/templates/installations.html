@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Инсталляции')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <h1>Инсталляции</h1>
+    <p class="hint">
+        Последнее известное состояние каждой инсталляции по телеметрии. Оператор вендора видит все
+        организации — фильтр ниже сужает выборку, но не ограничивает доступ.
+    </p>
+
+    <form class="card row" method="get" action="/">
+        <div class="field">
+            <label for="org">Организация</label>
+            <select id="org" name="org">
+                <option value="">все</option>
+                <option th:each="o : ${orgs}" th:value="${o.id()}" th:text="${o.name()}"
+                        th:selected="${selectedOrg != null and selectedOrg.toString() == o.id().toString()}">acme
+                </option>
+            </select>
+        </div>
+        <button type="submit">Показать</button>
+    </form>
+
+    <div class="scroll">
+        <table>
+            <thead>
+            <tr>
+                <th>Организация</th>
+                <th>Продукт</th>
+                <th>Состояние</th>
+                <th>Событие</th>
+                <th>Релиз</th>
+                <th>Сообщение</th>
+                <th>Последний раз</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="i : ${installations}" class="linked"
+                th:attr="data-href=@{'/installations/' + ${i.installationId()}}">
+                <td th:text="${orgNames.get(i.orgId())} ?: ${i.orgId()}">acme</td>
+                <td th:text="${productNames.get(i.productId())} ?: ${i.productId()}">wharf</td>
+                <td>
+                    <span class="state"
+                          th:classappend="${i.lastState() == 'RUNNING'} ? 'state-ok'
+                                        : (${i.lastState() == 'FAILED' or i.lastState() == 'REJECTED'} ? 'state-error' : 'state-warn')"
+                          th:text="${i.lastState()} ?: '—'">RUNNING</span>
+                </td>
+                <td><span class="badge" th:text="${i.lastType()}">state_changed</span></td>
+                <td th:if="${i.lastReleaseId() != null}"
+                    th:text="${releaseVersions.get(i.lastReleaseId())} ?: ${i.lastReleaseId()}">1.4.2</td>
+                <td th:unless="${i.lastReleaseId() != null}">—</td>
+                <td class="wrap" th:text="${i.lastMessage()} ?: '—'">—</td>
+                <td th:insert="~{layout :: ts(${i.lastSeen()})}">—</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(installations)}">
+                <td class="empty" colspan="7">
+                    Телеметрии пока нет — либо агент ещё не зарегистрирован, либо не начал pull-цикл.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{layout :: pager(${baseUrl}, ${page}, ${hasNext})}"></div>
+</main>
+
+</body>
+</html>

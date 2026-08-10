@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Продукты')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <h1>Доступные продукты</h1>
+    <p class="hint">
+        Здесь то, на что вашей организации выдано право. Установка не происходит по нажатию: команда
+        встаёт в очередь, а выполняет её ваш агент на очередном цикле опроса.
+    </p>
+
+    <div class="cards">
+        <section class="card product" th:each="p : ${products}">
+            <div class="product-head">
+                <h2 th:text="${p.name()}">wharf</h2>
+                <span class="badge" th:text="${p.channel()}">stable</span>
+            </div>
+            <p class="muted" th:text="${p.description()} ?: '—'">описание</p>
+
+            <dl class="facts">
+                <dt>Право действует</dt>
+                <dd>
+                    <span th:if="${p.entitledUntil() == null}" class="badge">бессрочно</span>
+                    <span th:unless="${p.entitledUntil() == null}"
+                          th:replace="~{layout :: ts(${p.entitledUntil()})}">—</span>
+                </dd>
+
+                <dt>Состояние</dt>
+                <dd>
+                    <span th:if="${pendingByProduct.containsKey(p.productId())}" class="state state-warn">
+                        в очереди: <span th:text="${pendingByProduct.get(p.productId())}">install</span>
+                    </span>
+                    <span th:unless="${pendingByProduct.containsKey(p.productId())}"
+                          th:with="installed=${installedByProduct.get(p.productId())}">
+                        <span th:if="${installed == null}" class="muted">не установлен</span>
+                        <span th:unless="${installed == null}" class="state"
+                              th:classappend="${installed.isRunning()} ? ' state-ok'
+                                            : (${installed.lastState() == 'REMOVED'} ? '' : ' state-error')"
+                              th:text="${installed.lastState()} ?: '—'">RUNNING</span>
+                    </span>
+                </dd>
+            </dl>
+
+            <p class="muted" th:unless="${p.hasReleases()}">
+                В канале пока нет опубликованных релизов — ставить нечего.
+            </p>
+
+            <form th:if="${p.hasReleases()}" method="post" action="/intents" class="product-actions">
+                <input type="hidden" name="productId" th:value="${p.productId()}">
+                <input type="hidden" name="installationId"
+                       th:with="installed=${installedByProduct.get(p.productId())}"
+                       th:value="${installed == null} ? '' : ${installed.installationId()}">
+
+                <div class="field">
+                    <label th:for="'release-' + ${p.productId()}">Версия</label>
+                    <select th:id="'release-' + ${p.productId()}" name="releaseId">
+                        <option th:each="r : ${p.releases()}" th:value="${r.id()}"
+                                th:text="${r.version()} + (${r.changelog()} != null ? ' — ' + ${r.changelog()} : '')"
+                                th:selected="${r.id() == p.latestReleaseId()}">1.4.2
+                        </option>
+                    </select>
+                </div>
+
+                <div class="product-buttons"
+                     th:with="installed=${installedByProduct.get(p.productId())},
+                              isRunning=${installed != null and installed.isRunning()}">
+                    <button type="submit" name="action" th:value="${isRunning} ? 'UPDATE' : 'INSTALL'"
+                            th:text="${isRunning} ? 'Обновить' : 'Установить'">Установить
+                    </button>
+                    <button th:if="${isRunning}" type="submit" name="action" value="UNINSTALL"
+                            class="danger"
+                            formaction="/intents">
+                        Удалить
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <p class="empty" th:if="${#lists.isEmpty(products)}">
+            Вашей организации пока не выдано ни одного права. Обратитесь к вендору.
+        </p>
+    </div>
+
+    <div th:if="${not #lists.isEmpty(pending)}">
+        <h2>Ожидают выполнения агентом</h2>
+        <div class="scroll">
+            <table>
+                <thead>
+                <tr>
+                    <th>Когда</th>
+                    <th>Действие</th>
+                    <th>Инсталляция</th>
+                    <th>Релиз</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="i : ${pending}">
+                    <td th:insert="~{layout :: ts(${i.createdAt()})}">—</td>
+                    <td><span class="badge" th:text="${i.action()}">install</span></td>
+                    <td th:insert="~{layout :: uuid(${i.installationId()})}">—</td>
+                    <td th:insert="~{layout :: uuid(${i.targetReleaseId()})}">—</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,3 @@
+iw:
+  client-console:
+    gateway-url: http://api-gateway:8080

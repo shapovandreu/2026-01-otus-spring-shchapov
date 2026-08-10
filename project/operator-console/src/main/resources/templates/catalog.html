@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Каталог')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <h1>Продукты</h1>
+    <p class="hint">
+        Каталог вендора. Релизы заводятся внутри продукта — нажмите на строку, чтобы их открыть.
+    </p>
+
+    <div class="toolbar">
+        <h2 style="margin:0">Все продукты</h2>
+        <button type="button" data-dialog="newProduct">Новый продукт</button>
+    </div>
+
+    <div class="scroll">
+        <table>
+            <thead>
+            <tr>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Создан</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${products}" class="linked"
+                th:attr="data-href=@{'/catalog/products/' + ${p.id()}}">
+                <td th:text="${p.name()}">wharf</td>
+                <td class="wrap" th:text="${p.description()} ?: '—'">—</td>
+                <td th:insert="~{layout :: ts(${p.createdAt()})}">—</td>
+                <td class="actions">
+                    <button type="button" class="secondary small" data-dialog="editProduct"
+                            th:attr="data-action=@{'/catalog/products/' + ${p.id()}},
+                                     data-set-Name=${p.name()},
+                                     data-set-Description=${p.description()} ?: ''">
+                        Изменить
+                    </button>
+                    <form method="post" th:action="@{'/catalog/products/' + ${p.id()} + '/delete'}"
+                          data-confirm="Удалить продукт? Действие необратимо.">
+                        <button type="submit" class="danger small">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(products)}">
+                <td class="empty" colspan="4">Продуктов пока нет.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <dialog id="newProduct">
+        <h2>Новый продукт</h2>
+        <form method="post" action="/catalog/products">
+            <div class="field">
+                <label for="name">Название</label>
+                <input id="name" name="name" required autocomplete="off">
+            </div>
+            <div class="field">
+                <label for="description">Описание (необязательно)</label>
+                <input id="description" name="description" maxlength="500" autocomplete="off">
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="secondary" data-dialog-close>Отмена</button>
+                <button type="submit">Создать</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="editProduct">
+        <h2>Изменить продукт</h2>
+        <form method="post" action="/catalog">
+            <div class="field">
+                <label for="editProductName">Название</label>
+                <input id="editProductName" name="name" required autocomplete="off">
+            </div>
+            <div class="field">
+                <label for="editProductDescription">Описание (необязательно)</label>
+                <input id="editProductDescription" name="description" maxlength="500" autocomplete="off">
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="secondary" data-dialog-close>Отмена</button>
+                <button type="submit">Сохранить</button>
+            </div>
+        </form>
+    </dialog>
+</main>
+
+</body>
+</html>

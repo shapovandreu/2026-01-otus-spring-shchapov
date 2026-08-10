@@ -1,0 +1,3 @@
+CREATE DATABASE iw_auth OWNER iw;
+CREATE DATABASE iw_catalog OWNER iw;
+CREATE DATABASE iw_license OWNER iw;

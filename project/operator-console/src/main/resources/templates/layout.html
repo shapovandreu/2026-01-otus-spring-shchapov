@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'InversionWharf · ' + ${title}">InversionWharf</title>
+    <link rel="stylesheet" th:href="@{/css/console.css(v=${@staticAssets.version()})}" href="/css/console.css">
+    <script th:src="@{/js/console.js(v=${@staticAssets.version()})}" src="/js/console.js" defer></script>
+</head>
+
+<body>
+
+<header th:fragment="nav" class="topbar">
+    <a class="brand" href="/">InversionWharf</a>
+    <nav th:if="${operator != null}">
+        <a href="/">Инсталляции</a>
+        <a th:if="${operator.canManageCatalog()}" href="/catalog">Каталог</a>
+        <a th:if="${operator.canManageLicenses()}" href="/licenses">Права</a>
+        <a th:if="${operator.canManageLicenses()}" href="/licenses/tokens">Токены</a>
+        <a th:if="${operator.canManageOrganizations()}" href="/orgs">Организации</a>
+        <a href="/audit">Аудит</a>
+    </nav>
+    <div class="who" th:if="${operator != null}">
+        <span th:text="${operator.username()}">оператор</span>
+        <span class="roles" th:text="${#strings.setJoin(operator.roles(), ', ')}">ROLES</span>
+        <form method="post" action="/logout">
+            <button type="submit" class="link">выйти</button>
+        </form>
+    </div>
+</header>
+
+<div th:fragment="pager(base, page, hasNext)" class="pager">
+    <a th:if="${page > 0}" th:href="@{${base}(page=${page - 1})}">← назад</a>
+    <span th:text="'страница ' + (${page} + 1)">страница 1</span>
+    <a th:if="${hasNext}" th:href="@{${base}(page=${page + 1})}">дальше →</a>
+</div>
+
+<span th:fragment="uuid(value)" class="uuid" th:title="${value}"
+      th:text="${value == null} ? '—' : ${#strings.abbreviate(value.toString(), 11)}">00000000</span>
+
+<time th:fragment="ts(value)" th:datetime="${value}"
+      th:text="${value == null} ? '—' : ${value.toString()}">—</time>
+
+</body>
+</html>

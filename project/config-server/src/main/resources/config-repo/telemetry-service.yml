@@ -1,0 +1,23 @@
+server:
+  port: 8084
+
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      group-id: telemetry-service
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/iw_telemetry}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${AUTH_JWKS_URI:http://localhost:8081/api/v1/auth/.well-known/jwks.json}
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+
+iw:
+  telemetry:
+    topic: telemetry

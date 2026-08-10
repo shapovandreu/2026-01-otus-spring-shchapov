@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Инсталляции')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <h1>Мои инсталляции</h1>
+    <p class="hint">
+        Последнее известное состояние по данным вашего агента. Фильтра по организации здесь нет:
+        Control Plane отдаёт только инсталляции вашей организации.
+    </p>
+
+    <div class="scroll">
+        <table>
+            <thead>
+            <tr>
+                <th>Инсталляция</th>
+                <th>Продукт</th>
+                <th>Состояние</th>
+                <th>Событие</th>
+                <th>Релиз</th>
+                <th>Сообщение</th>
+                <th>Последний раз</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="i : ${installations}">
+                <td>
+                    <a th:href="@{'/installations/' + ${i.installationId()}}">
+                        <span th:replace="~{layout :: uuid(${i.installationId()})}">—</span>
+                    </a>
+                </td>
+                <td th:insert="~{layout :: uuid(${i.productId()})}">—</td>
+                <td>
+                    <span class="state"
+                          th:classappend="${i.lastState() == 'RUNNING'} ? 'state-ok'
+                                        : (${i.lastState() == 'FAILED' or i.lastState() == 'REJECTED'} ? 'state-error'
+                                        : (${i.lastState() == 'REMOVED'} ? '' : 'state-warn'))"
+                          th:text="${i.lastState()} ?: '—'">RUNNING</span>
+                </td>
+                <td><span class="badge" th:text="${i.lastType()}">state_changed</span></td>
+                <td th:insert="~{layout :: uuid(${i.lastReleaseId()})}">—</td>
+                <td class="wrap" th:text="${i.lastMessage()} ?: '—'">—</td>
+                <td th:insert="~{layout :: ts(${i.lastSeen()})}">—</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(installations)}">
+                <td class="empty" colspan="7">
+                    Пока пусто — либо ваш агент ещё не запущен, либо вы ничего не устанавливали.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{layout :: pager(${baseUrl}, ${page}, ${hasNext})}"></div>
+</main>
+
+</body>
+</html>

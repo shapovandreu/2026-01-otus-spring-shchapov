@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Права')}"></head>
+<body>
+<header th:replace="~{layout :: nav}"></header>
+
+<main>
+    <h1>Права</h1>
+    <p class="hint">
+        Право разрешает организации продукт в канале и действует до указанного срока.
+        Без права агенты организации не получат ни одного релиза.
+    </p>
+
+    <div class="toolbar">
+        <form class="filter" method="get" action="/licenses">
+            <div class="field">
+                <label for="org">Организация</label>
+                <select id="org" name="org">
+                    <option value="">— все —</option>
+                    <option th:each="o : ${orgs}" th:value="${o.id()}" th:text="${o.name()}"
+                            th:selected="${selectedOrg != null and selectedOrg.toString() == o.id().toString()}">acme
+                    </option>
+                </select>
+            </div>
+            <button type="submit" class="secondary">Показать</button>
+        </form>
+        <button type="button" data-dialog="newEntitlement">Выдать право</button>
+    </div>
+
+    <div class="scroll">
+        <table>
+            <thead>
+            <tr>
+                <th>Организация</th>
+                <th>Продукт</th>
+                <th>Канал</th>
+                <th>Действует до</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="e : ${entitlements}">
+                <td th:text="${orgNames.containsKey(e.orgId())} ? ${orgNames.get(e.orgId())} : ${e.orgId()}">acme</td>
+                <td th:text="${productNames.containsKey(e.productId())}
+                             ? ${productNames.get(e.productId())} : ${e.productId()}">wharf
+                </td>
+                <td><span class="badge" th:text="${e.channel()}">stable</span></td>
+                <td>
+                    <span th:if="${e.validUntil() == null}" class="badge">бессрочно</span>
+                    <span th:unless="${e.validUntil() == null}"
+                          th:replace="~{layout :: ts(${e.validUntil()})}">—</span>
+                </td>
+                <td class="actions">
+                    <button type="button" class="secondary small" data-dialog="editEntitlement"
+                            th:attr="data-action=@{'/licenses/entitlements/' + ${e.id()}}">
+                        Изменить
+                    </button>
+                    <form method="post" th:action="@{'/licenses/entitlements/' + ${e.id()} + '/revoke'}"
+                          data-confirm="Отозвать право? Агенты организации сразу перестанут получать релизы.">
+                        <input type="hidden" name="orgId" th:value="${e.orgId()}">
+                        <button type="submit" class="danger small">Отозвать</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(entitlements)}">
+                <td class="empty" colspan="5">Прав нет — агенты не получат ни одного релиза.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <dialog id="newEntitlement">
+        <h2>Выдать право</h2>
+        <form method="post" action="/licenses/entitlements">
+            <div class="field">
+                <label for="entOrg">Организация</label>
+                <select id="entOrg" name="orgId" required>
+                    <option th:each="o : ${orgs}" th:value="${o.id()}" th:text="${o.name()}"
+                            th:selected="${selectedOrg != null and selectedOrg.toString() == o.id().toString()}">acme
+                    </option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="entProduct">Продукт</label>
+                <select id="entProduct" name="productId" required>
+                    <option th:each="p : ${products}" th:value="${p.id()}" th:text="${p.name()}">wharf</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="entChannel">Канал</label>
+                <select id="entChannel" name="channel">
+                    <option value="stable">stable</option>
+                    <option value="beta">beta</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="entDays">Действует, дней (0 — бессрочно)</label>
+                <input id="entDays" name="validDays" type="number" min="0" value="0">
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="secondary" data-dialog-close>Отмена</button>
+                <button type="submit">Выдать</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="editEntitlement">
+        <h2>Срок действия права</h2>
+        <form method="post" action="/licenses">
+            <div class="field">
+                <label for="editDays">Действует, дней от сегодня (0 — бессрочно)</label>
+                <input id="editDays" name="validDays" type="number" min="0" value="0">
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="secondary" data-dialog-close>Отмена</button>
+                <button type="submit">Сохранить</button>
+            </div>
+        </form>
+    </dialog>
+</main>
+
+</body>
+</html>
